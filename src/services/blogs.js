@@ -6,10 +6,7 @@ const setToken = (newToken) => {
 };
 
 const getAll = async () => {
-  const config = {
-    headers: { Authorization: token },
-  };
-  const response = await axios.get(baseUrl, config);
+  const response = await axios.get(baseUrl);
   return response.data;
 };
 
@@ -17,7 +14,6 @@ const add = async (updatedBlog) => {
   const config = {
     headers: { Authorization: token },
   };
-  console.log(updatedBlog);
   const respone = await axios.put(
     `${baseUrl}/${updatedBlog.id}`,
     updatedBlog,

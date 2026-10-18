@@ -1,6 +1,8 @@
-import { useState } from "react";
 import blogService from "../services/blogs";
-const Blog = ({ blog, setBlogs, blogs, username, setSuccessMessage }) => {
+import { useNavigate, useParams } from "react-router-dom";
+const Blog = ({ setBlogs, blogs, user, setSuccessMessage }) => {
+  const id = useParams().id;
+  const blog = blogs.find((blog) => blog.id === id);
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -8,13 +10,9 @@ const Blog = ({ blog, setBlogs, blogs, username, setSuccessMessage }) => {
     borderWidth: 1,
     marginBottom: 5,
   };
-
-  const [viewDetails, setViewDetails] = useState(false);
-
-  const hideDetails = { display: viewDetails ? "none" : "" };
-  const showDetails = { display: viewDetails ? "" : "none" };
-
+  const navigate = useNavigate();
   const addLike = async (blog) => {
+    if (!user) return;
     try {
       blog.likes += 1;
       const updatedBlog = await blogService.add(blog);
@@ -30,6 +28,7 @@ const Blog = ({ blog, setBlogs, blogs, username, setSuccessMessage }) => {
   };
 
   const deleteBlog = async (selectedBlog) => {
+    if (!user) return;
     const deleteConfrimation = window.confirm(
       `Remove blog ${selectedBlog.title} by ${selectedBlog.author}`,
     );
@@ -41,30 +40,28 @@ const Blog = ({ blog, setBlogs, blogs, username, setSuccessMessage }) => {
       if (response == 204) {
         setBlogs(blogs.filter((blog) => blog.id != selectedBlog.id));
         setSuccessMessage(null);
+        navigate("/");
       } else throw new Error(`Wrong response code ${response}`);
     } catch (exception) {
       console.log(exception);
     }
   };
-
+  console.log(user);
   return (
     <li className="blog">
-      <p style={{ ...blogStyle, ...hideDetails }}>
-        {`${blog.title} ${blog.author}`}
-        <button onClick={() => setViewDetails(!viewDetails)}>view</button>
-      </p>
-      <div style={{ ...blogStyle, ...showDetails }}>
-        <p>
-          {`${blog.title} ${blog.author}`}
-          <button onClick={() => setViewDetails(!viewDetails)}>hide</button>
-        </p>
+      <div style={blogStyle}>
+        <p>{`${blog.title} ${blog.author}`}</p>
         <p className="url">{blog.url}</p>
-        <p className="likes">
-          likes {blog.likes}
-          <button onClick={() => addLike(blog)}>like</button>
-        </p>
-        <p>{username}</p>
-        <button onClick={() => deleteBlog(blog)}>remove</button>
+        {user && (
+          <p className="likes">
+            likes {blog.likes}
+            <button onClick={() => addLike(blog)}>like</button>
+          </p>
+        )}
+        <p>{blog.user}</p>
+        {user && user.username === blog.user && (
+          <button onClick={() => deleteBlog(blog)}>remove</button>
+        )}
       </div>
     </li>
   );

@@ -6,6 +6,7 @@ import {
   Link,
   useNavigate,
 } from "react-router-dom";
+import Bloglist from "./components/Bloglist";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import LoginForm from "./components/LoginForm";
@@ -25,15 +26,24 @@ const App = () => {
   useEffect(() => {
     if (user) blogService.setToken(user.token);
   }, [user]);
+  console.log(user);
 
+  // useEffect(() => {
+  //   const fetchBlogs = async () => {
+  //     const userLoggedJSON = window.localStorage.getItem("bloglistUser");
+  //     if (userLoggedJSON) {
+  //       const blogs = await blogService.getAll();
+  //       setBlogs(blogs);
+  //       console.log("mpainei sto effect");
+  //     }
+  //   };
+  //   fetchBlogs();
+  // }, []);
   useEffect(() => {
     const fetchBlogs = async () => {
-      const userLoggedJSON = window.localStorage.getItem("bloglistUser");
-      if (userLoggedJSON) {
-        const blogs = await blogService.getAll();
-        setBlogs(blogs);
-        console.log("mpainei sto effect");
-      }
+      console.log("run");
+      const blogs = await blogService.getAll();
+      setBlogs(blogs);
     };
     fetchBlogs();
   }, []);
@@ -65,43 +75,47 @@ const App = () => {
       <div>
         <Link to="/">blogs</Link>
         {user ? (
-          <button onClick={handleLogout}>logout</button>
+          <>
+            <Link to="/create">create</Link>
+            <button onClick={handleLogout}>logout</button>
+          </>
         ) : (
           <Link to="/login">login</Link>
         )}
-        <Link></Link>
       </div>
       <Routes>
         <Route
+          path="/notes/:id"
+          element={
+            <Blog
+              user={user}
+              blogs={blogs}
+              setBlogs={setBlogs}
+              setSuccessMessage={setSuccessMessage}
+            ></Blog>
+          }
+        />
+        <Route
+          path="/create"
+          element={
+            <Togglable buttonLabel="create new blog">
+              <AddBlogForm addBlog={addBlog} />
+            </Togglable>
+          }
+        />
+        <Route
           path="/"
           element={
-            user && (
-              <>
-                <h2>blogs</h2>
-                <p>{user.username} logged in</p>
-                <Togglable buttonLabel="create new blog">
-                  <AddBlogForm addBlog={addBlog} />
-                </Togglable>
-                <ul>
-                  {blogs
-                    .map((blog) => (
-                      <Blog
-                        username={user?.username}
-                        key={blog.id}
-                        blogs={blogs}
-                        setBlogs={setBlogs}
-                        blog={blog}
-                        setSuccessMessage={setSuccessMessage}
-                      />
-                    ))
-                    .toSorted((blogfirst, blogsecond) => {
-                      return (
-                        blogsecond.props.blog.likes - blogfirst.props.blog.likes
-                      );
-                    })}
-                </ul>
-              </>
-            )
+            <>
+              <h2>blogs</h2>
+              {user ? <p>{user.username} logged in</p> : ""}
+              <Bloglist
+                blogs={blogs}
+                user={user}
+                setBlogs={setBlogs}
+                setSuccessMessage={setSuccessMessage}
+              ></Bloglist>
+            </>
           }
         />
         <Route

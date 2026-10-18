@@ -1,15 +1,17 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 export default function AddTokenForm({ addBlog }) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [url, setUrl] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = async (event) => {
     event.preventDefault();
     await addBlog({ title, author, url });
     setTitle("");
     setAuthor("");
     setUrl("");
+    navigate("/");
   };
 
   return (
